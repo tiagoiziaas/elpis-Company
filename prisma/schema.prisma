@@ -1,0 +1,292 @@
+// Prisma schema for Elpis - Health Tech Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// User model - base authentication
+model User {
+  id                String             @id @default(cuid())
+  name              String
+  email             String             @unique
+  passwordHash      String             @map("password_hash")
+  role              Role               @default(PATIENT)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  professionalProfile ProfessionalProfile?
+  appointments      Appointment[]      @relation("PatientAppointments")
+
+  @@map("users")
+}
+
+enum Role {
+  PATIENT
+  PROFESSIONAL
+  ADMIN
+}
+
+// Professional Profile - public facing profile for health professionals
+model ProfessionalProfile {
+  id                String             @id @default(cuid())
+  userId            String             @unique
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug              String             @unique
+  fullName          String             @map("full_name")
+  title             String             @default("Especialista")
+  specialty         String
+  city              String
+  state             String
+  bio               String?
+  approach          String?            @map("approach")
+  headline          String?            @map("headline")
+  profileImageUrl   String?            @map("profile_image_url")
+  coverImageUrl     String?            @map("cover_image_url")
+  whatsapp          String?
+  instagram         String?
+  website           String?
+  isPublic          Boolean            @default(true) @map("is_public")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  services          ProfessionalService[]
+  contentPosts      ContentPost[]
+  availabilityRules AvailabilityRule[]
+  appointments      Appointment[]
+  patients          Patient[]
+  categoryId                String?            @map("category_id")
+  category                  Category?          @relation(fields: [categoryId], references: [id])
+  businessCard              BusinessCard?
+  defaultConsultationType   String?            @map("default_consultation_type")
+  defaultConsultationValue  Decimal?           @map("default_consultation_value") @db.Decimal(10, 2)
+  councilType               String?            @map("council_type")   // Ex: CRM, CRN, CREFITO, CRP, CFP
+  councilNumber             String?            @map("council_number") // Ex: 12345-SP
+
+  @@index([slug])
+  @@index([specialty])
+  @@index([city, state])
+  @@index([isPublic])
+  @@map("professional_profiles")
+}
+
+// Professional Services offered
+model ProfessionalService {
+  id                String             @id @default(cuid())
+  professionalProfileId String         @map("professional_profile_id")
+  professionalProfile ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+  title             String
+  description       String?
+  price             Decimal?           @db.Decimal(10, 2)
+  duration          Int?               // duration in minutes
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  appointments      Appointment[]
+
+  @@index([professionalProfileId])
+  @@map("professional_services")
+}
+
+// Content Posts - articles and videos published by professionals
+model ContentPost {
+  id                String             @id @default(cuid())
+  professionalProfileId String         @map("professional_profile_id")
+  professionalProfile ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+  title             String
+  slug              String             @unique
+  excerpt           String?
+  content           String             @db.Text
+  coverImageUrl     String?            @map("cover_image_url")
+  videoUrl          String?            @map("video_url")
+  attachmentUrl     String?            @map("attachment_url")
+  type              ContentType        @default(ARTICLE)
+  status            ContentStatus      @default(DRAFT)
+  publishedAt       DateTime?          @map("published_at")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([professionalProfileId])
+  @@index([status])
+  @@index([type])
+  @@map("content_posts")
+}
+
+enum ContentType {
+  ARTICLE
+  VIDEO
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Availability Rules - weekly schedule for professionals
+model AvailabilityRule {
+  id                String             @id @default(cuid())
+  professionalProfileId String         @map("professional_profile_id")
+  professionalProfile ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+  weekDay           Int                @map("week_day") // 0-6 (Sunday-Saturday)
+  startTime         String             @map("start_time") // HH:mm format
+  endTime           String             @map("end_time") // HH:mm format
+  active            Boolean            @default(true)
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  @@index([professionalProfileId])
+  @@map("availability_rules")
+}
+
+// Appointments - booking system
+model Appointment {
+  id                String             @id @default(cuid())
+  professionalProfileId String         @map("professional_profile_id")
+  professionalProfile ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+  patientId         String?            @map("patient_id")
+  patient           User?              @relation("PatientAppointments", fields: [patientId], references: [id], onDelete: SetNull)
+  patientRecordId   String?            @map("patient_record_id") // Reference to Patient model
+  patientRecord     Patient?           @relation(fields: [patientRecordId], references: [id], onDelete: SetNull)
+  patientName       String             @map("patient_name")
+  patientEmail      String             @map("patient_email")
+  patientPhone      String             @map("patient_phone")
+  serviceId         String?            @map("service_id")
+  service           ProfessionalService? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  scheduledDate     DateTime           @map("scheduled_date")
+  scheduledTime     String             @map("scheduled_time") // HH:mm format - start time
+  scheduledEndTime  String?            @map("scheduled_end_time") // HH:mm format - end time
+  status            AppointmentStatus  @default(PENDING)
+  notes             String?            @db.Text
+  
+  // Consultation details
+  consultationValue Decimal?           @map("consultation_value") @db.Decimal(10, 2)
+  attendanceType    AttendanceType     @default(IN_PERSON) @map("attendance_type") // ONLINE or IN_PERSON
+  
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  @@index([professionalProfileId])
+  @@index([patientId])
+  @@index([patientRecordId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@map("appointments")
+}
+
+enum AttendanceType {
+  ONLINE
+  IN_PERSON
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// Categories - for organizing professionals by specialty
+model Category {
+  id                String             @id @default(cuid())
+  name              String             @unique
+  slug              String             @unique
+  description       String?
+  icon              String?
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  professionalProfiles ProfessionalProfile[]
+
+  @@index([slug])
+  @@map("categories")
+}
+
+// Business Card - digital business card for professionals
+model BusinessCard {
+  id                String             @id @default(cuid())
+  professionalProfileId String         @unique @map("professional_profile_id")
+  professionalProfile ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+
+  // Contact information
+  phone             String?
+  email             String?
+  website           String?
+
+  // Social media
+  instagram         String?
+  facebook          String?
+  linkedin          String?
+  youtube           String?
+  tiktok            String?
+
+  // Address
+  address           String?
+  addressNumber     String?            @map("address_number")
+  addressComplement String?            @map("address_complement")
+  neighborhood      String?
+  city              String?
+  state             String?
+  zipCode           String?            @map("zip_code")
+
+  // Additional info
+  description       String?
+  services          String[]           // Array of service names
+
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  @@index([professionalProfileId])
+  @@map("business_cards")
+}
+
+// Patient - patient records managed by professionals
+model Patient {
+  id                String             @id @default(cuid())
+  professionalProfileId String         @map("professional_profile_id")
+  professionalProfile ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+  
+  // Personal Information
+  firstName         String             @map("first_name")
+  lastName          String             @map("last_name")
+  email             String?
+  phone             String?
+  whatsapp          String?
+  dateOfBirth       DateTime?          @map("date_of_birth")
+  gender            String?            // Male, Female, Other, Prefer not to say
+  age               Int?               // Calculated or manually entered
+  
+  // Address
+  address           String?
+  addressNumber     String?            @map("address_number")
+  addressComplement String?            @map("address_complement")
+  neighborhood      String?
+  city              String?
+  state             String?
+  zipCode           String?            @map("zip_code")
+  
+  // Health Information (optional)
+  chiefComplaint    String?            @map("chief_complaint") // Queixa principal
+  medicalHistory    String?            @map("medical_history") // Histórico resumido
+  notes             String?            @db.Text
+  
+  // Default Consultation Settings
+  defaultConsultationType   String?    @map("default_consultation_type")
+  defaultConsultationValue  Decimal?   @map("default_consultation_value") @db.Decimal(10, 2)
+  
+  // Profile photo
+  profileImageUrl   String?            @map("profile_image_url")
+  
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  
+  appointments      Appointment[]
+
+  @@index([professionalProfileId])
+  @@index([email])
+  @@index([phone])
+  @@map("patients")
+}

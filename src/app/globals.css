@@ -1,0 +1,616 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── Elpis Brand Colors — Light Theme ── */
+    --background: 220 20% 97%;
+    --foreground: 220 15% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 10%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 220 15% 20%;
+    --muted: 220 12% 93%;
+    --muted-foreground: 220 10% 50%;
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 25 95% 53%;
+    --radius: 1rem;
+
+    /* ── Dashboard specific ── */
+    --sidebar-bg: 0 0% 100%;
+    --sidebar-border: 220 15% 91%;
+    --sidebar-item-active: 25 95% 53%;
+    --sidebar-item-hover: 220 20% 95%;
+    --header-bg: 0 0% 100%;
+    --page-bg: 220 20% 97%;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --card-hover-shadow: 0 8px 32px rgba(249,115,22,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .dark {
+    /* ── Elpis Brand Colors — Dark Theme ── */
+    --background: 224 20% 9%;
+    --foreground: 220 15% 95%;
+    --card: 224 18% 13%;
+    --card-foreground: 220 15% 95%;
+    --popover: 224 18% 13%;
+    --popover-foreground: 220 15% 95%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 224 18% 17%;
+    --secondary-foreground: 220 15% 85%;
+    --muted: 224 18% 17%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 224 18% 20%;
+    --input: 224 18% 20%;
+    --ring: 25 95% 53%;
+
+    /* ── Dashboard specific ── */
+    --sidebar-bg: 224 20% 11%;
+    --sidebar-border: 224 18% 18%;
+    --sidebar-item-active: 25 95% 53%;
+    --sidebar-item-hover: 224 18% 17%;
+    --header-bg: 224 20% 10%;
+    --page-bg: 224 20% 9%;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+    --card-hover-shadow: 0 8px 32px rgba(249,115,22,0.15), 0 2px 8px rgba(0,0,0,0.25);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.3s ease, color 0.2s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Dashboard Layout Utilities */
+  .dashboard-bg {
+    background-color: hsl(var(--page-bg));
+  }
+  .sidebar-bg {
+    background-color: hsl(var(--sidebar-bg));
+    border-color: hsl(var(--sidebar-border));
+  }
+  .header-bg {
+    background-color: hsl(var(--header-bg));
+  }
+}
+
+/* ============================================
+   INPUT / TEXTAREA — Dark Mode Fix
+   Ensures text stays readable in dark theme
+   ============================================ */
+
+input,
+textarea,
+select {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.7;
+}
+
+/* shadcn/ui Input component in dark mode */
+.dark input,
+.dark textarea,
+.dark select {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.65;
+}
+
+/* autofill fix — browser often overrides bg/color on autofill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  -webkit-box-shadow: 0 0 0 1000px hsl(var(--card)) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ============================================
+   LABEL / INPUT TITLE — Dark Mode Fix
+   ============================================ */
+
+label {
+  color: hsl(var(--foreground));
+}
+
+.dark label {
+  color: hsl(var(--foreground));
+  opacity: 1;
+}
+
+/* shadcn/ui Label component targets [data-slot="label"] in newer versions */
+[data-slot="label"],
+.dark [data-slot="label"] {
+  color: hsl(var(--foreground));
+  opacity: 1;
+}
+
+/* Peer-disabled labels stay muted */
+:disabled ~ label,
+[data-disabled] ~ label {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.7;
+}
+
+/* Surgena Font - Premium Display Font */
+@font-face {
+  font-family: 'Surgena';
+  src: url('/fonts/Surgena.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Surgena';
+  src: url('/fonts/Surgena-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Rubik Font — Targo Hero */
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap');
+
+
+/* ============================================
+   CUSTOM ANIMATIONS
+   ============================================ */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes glow-pulse {
+  0%,100% { box-shadow: 0 0 20px rgba(249,115,22,0.3), 0 0 40px rgba(249,115,22,0.1); }
+  50%      { box-shadow: 0 0 40px rgba(249,115,22,0.6), 0 0 80px rgba(249,115,22,0.2); }
+}
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer-line {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-slow {
+  0%,100% { opacity: 0.15; transform: scale(1); }
+  50%     { opacity: 0.30; transform: scale(1.05); }
+}
+
+@keyframes bounce-subtle {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(8px); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sidebar-badge-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes theme-switch {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(180deg) scale(0.8); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* ============================================
+   ANIMATION CLASSES
+   ============================================ */
+
+.animate-float          { animation: float 8s ease-in-out infinite; }
+.animate-shimmer        { animation: shimmer 3s linear infinite; }
+.animate-fade-in-up     { animation: fade-in-up 0.5s ease-out forwards; }
+.animate-fade-in-down   { animation: fade-in-down 0.4s ease-out forwards; }
+.animate-slide-in-left  { animation: slide-in-left 0.5s ease-out forwards; }
+.animate-scale-in       { animation: scale-in 0.4s ease-out forwards; }
+.animate-marquee        { animation: marquee 30s linear infinite; }
+.animate-marquee-slow   { animation: marquee 50s linear infinite; }
+.animate-marquee-reverse{ animation: marquee-reverse 30s linear infinite; }
+.animate-glow-pulse     { animation: glow-pulse 2s ease-in-out infinite; }
+.animate-gradient-shift { background-size: 200% 200%; animation: gradient-shift 6s ease infinite; }
+.animate-pulse-slow     { animation: pulse-slow 5s ease-in-out infinite; }
+.animate-bounce-subtle  { animation: bounce-subtle 1.5s ease-in-out infinite; }
+.animate-theme-switch   { animation: theme-switch 0.5s ease-out; }
+
+/* ============================================
+   GLASS EFFECTS
+   ============================================ */
+
+.glass {
+  background: rgba(255,255,255,0.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.dark .glass {
+  background: rgba(15,18,26,0.80);
+}
+
+.glass-dark {
+  background: rgba(11,11,11,0.80);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.glass-card {
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.20);
+}
+
+.glass-card-light {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.60);
+}
+
+/* ============================================
+   PREMIUM CARD STYLES
+   ============================================ */
+
+.card-premium {
+  background-color: hsl(var(--card));
+  border-radius: 1.25rem;
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--card-shadow);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+}
+
+.card-premium:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--card-hover-shadow);
+  border-color: rgba(249,115,22,0.22);
+}
+
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(249,115,22,0.1);
+}
+
+/* ============================================
+   DASHBOARD CARD
+   ============================================ */
+
+.dash-card {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 1.25rem;
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+.dash-card:hover {
+  box-shadow: var(--card-hover-shadow);
+  border-color: rgba(249,115,22,0.18);
+  transform: translateY(-3px);
+}
+
+/* ============================================
+   GRADIENT TEXT
+   ============================================ */
+
+.text-gradient {
+  background: linear-gradient(135deg, #F97316 0%, #FB923C 50%, #F97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #FDBA74 0%, #F97316 50%, #FDBA74 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-white {
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.8) 50%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   SCROLLBAR — Orange Theme
+   ============================================ */
+
+::-webkit-scrollbar          { width: 6px; height: 6px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: rgba(249,115,22,0.5); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #F97316; }
+
+/* ============================================
+   GRADIENT ORBS
+   ============================================ */
+
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.1;
+  background: #F97316;
+}
+.gradient-orb-orange { background: #F97316; }
+.gradient-orb-yellow { background: #FDBA74; }
+
+/* ============================================
+   SECTION STYLES
+   ============================================ */
+
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #F97316;
+  margin-bottom: 1rem;
+}
+.section-badge::before { content: '//'; opacity: 0.6; }
+
+/* ============================================
+   STEP CONNECTOR LINE
+   ============================================ */
+
+.step-connector {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, #F97316, #FDBA74);
+  opacity: 0.3;
+  margin: 0 -8px;
+  top: -24px;
+}
+
+/* ============================================
+   MARQUEE CONTAINER
+   ============================================ */
+
+.marquee-container { overflow: hidden; width: 100%; position: relative; }
+.marquee-track     { display: flex; align-items: center; gap: 0; width: max-content; }
+
+/* ============================================
+   IMAGE COLLAGE
+   ============================================ */
+
+.image-collage-wrapper {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+  border-radius: 1.5rem;
+  overflow: visible;
+}
+.image-collage-wrapper img {
+  border-radius: 1rem;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   SIDEBAR NAV ITEM
+   ============================================ */
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+.nav-item:hover {
+  background-color: hsl(var(--sidebar-item-hover));
+  color: hsl(var(--foreground));
+  transform: translateX(2px);
+}
+.nav-item.active {
+  background: linear-gradient(135deg, #F97316, #EA580C);
+  color: white;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.35);
+  transform: none;
+}
+.nav-item.active .nav-icon { color: white; }
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+  color: hsl(var(--muted-foreground));
+}
+.nav-item:hover .nav-icon { color: #F97316; }
+
+/* ============================================
+   THEME TOGGLE BUTTON
+   ============================================ */
+
+.theme-toggle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  border: 1px solid hsl(var(--border));
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+.theme-toggle-btn:hover {
+  background-color: rgba(249,115,22,0.12);
+  color: #F97316;
+  border-color: rgba(249,115,22,0.3);
+  transform: scale(1.05);
+}
+
+/* ============================================
+   LOADING SKELETON
+   ============================================ */
+
+.skeleton {
+  background: linear-gradient(90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--secondary)) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-line 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ============================================
+   STAT COUNTER ANIMATION
+   ============================================ */
+
+.stat-value {
+  animation: count-up 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+
+/* ============================================
+   TARGO HERO UTILITIES
+   ============================================ */
+
+/* Diagonal clip-path button (top-right + bottom-left corners) */
+.targo-btn {
+  clip-path: polygon(0% 0%, calc(100% - 12px) 0%, 100% 12px, 100% 100%, 12px 100%, 0% calc(100% - 12px));
+}
+.targo-btn-sm {
+  clip-path: polygon(0% 0%, calc(100% - 10px) 0%, 100% 10px, 100% 100%, 10px 100%, 0% calc(100% - 10px));
+}
+
+/* Liquid glass consultation card */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 24px 48px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(255, 255, 255, 0.03) 40%,
+    transparent 70%
+  );
+}
+
+/* Targo video hero: ensure video is never dimmed */
+.targo-video-hero video {
+  opacity: 1 !important;
+}
