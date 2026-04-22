@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [attempts, setAttempts] = useState(0)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -22,8 +23,14 @@ export default function LoginPage() {
     setIsLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
+    const email = (formData.get('email') as string).toLowerCase().trim()
     const password = formData.get('password') as string
+
+    if (!email || !password) {
+      setError('Preencha todos os campos.')
+      setIsLoading(false)
+      return
+    }
 
     try {
       const result = await signIn('credentials', {
@@ -33,7 +40,12 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError('Email ou senha inválidos')
+        setAttempts((prev) => prev + 1)
+        setError(
+          attempts >= 3
+            ? 'Muitas tentativas. Aguarde antes de tentar novamente.'
+            : 'Email ou senha inválidos.'
+        )
       } else {
         router.push('/dashboard')
         router.refresh()
@@ -47,28 +59,18 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-
-      {/* ─── LEFT PANEL — Brand/Image ──────────────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative flex-col overflow-hidden">
-        {/* Background */}
         <img
           src="https://images.unsplash.com/photo-1576765608622-067973a79f53?w=960&h=1080&fit=crop&q=85"
           alt="Nutricionista em consulta"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-elpis-black/75 to-elpis-orange-dark/30" />
-
-        {/* Grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(249,115,22,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(249,115,22,0.04)_1px,transparent_1px)] bg-[size:60px_60px]" />
-
-        {/* Orbs */}
         <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-elpis-orange/10 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
 
-        {/* Content */}
         <div className="relative z-10 flex flex-col h-full p-12">
-
-          {/* Logo */}
           <Link href="/" className="inline-flex items-center justify-center gap-0 mb-auto group">
             <img
               src="/logo.png"
@@ -78,7 +80,6 @@ export default function LoginPage() {
             <span className="font-display font-bold text-3xl text-white leading-none">Elpis</span>
           </Link>
 
-          {/* Main copy */}
           <div className="mb-8">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -95,7 +96,6 @@ export default function LoginPage() {
               </p>
             </motion.div>
 
-            {/* Social proof stats */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -116,7 +116,6 @@ export default function LoginPage() {
             </motion.div>
           </div>
 
-          {/* Testimonial card */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -146,10 +145,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ─── RIGHT PANEL — Form ────────────────────────────────────── */}
       <div className="flex-1 bg-white flex flex-col">
-
-        {/* Top bar */}
         <div className="p-6 flex items-center justify-between">
           <Link href="/" className="inline-flex items-center gap-2 text-elpis-gray-medium hover:text-elpis-black transition-colors group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -163,11 +159,8 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Form content */}
         <div className="flex-1 flex items-center justify-center px-6 py-8">
           <div className="w-full max-w-md">
-
-            {/* Mobile logo */}
             <Link href="/" className="lg:hidden flex items-center justify-center gap-0 mb-8">
               <img
                 src="/logo.png"
@@ -189,12 +182,14 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-3"
+                    role="alert"
+                    aria-live="assertive"
                   >
                     <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                       <span className="text-red-600 text-xs font-bold">!</span>
@@ -203,7 +198,6 @@ export default function LoginPage() {
                   </motion.div>
                 )}
 
-                {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-elpis-black font-medium text-sm">Email</Label>
                   <div className="relative">
@@ -215,11 +209,12 @@ export default function LoginPage() {
                       placeholder="seu@email.com"
                       className="pl-11 h-12 border-elpis-gray-light bg-elpis-offWhite text-elpis-black placeholder:text-elpis-gray-medium focus:border-elpis-orange focus:ring-2 focus:ring-elpis-orange/20 rounded-xl transition-all"
                       required
+                      autoComplete="username"
+                      maxLength={255}
                     />
                   </div>
                 </div>
 
-                {/* Password */}
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-elpis-black font-medium text-sm">Senha</Label>
                   <div className="relative">
@@ -231,18 +226,20 @@ export default function LoginPage() {
                       placeholder="••••••••"
                       className="pl-11 pr-11 h-12 border-elpis-gray-light bg-elpis-offWhite text-elpis-black placeholder:text-elpis-gray-medium focus:border-elpis-orange focus:ring-2 focus:ring-elpis-orange/20 rounded-xl transition-all"
                       required
+                      autoComplete="current-password"
+                      maxLength={128}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-elpis-gray-medium hover:text-elpis-black transition-colors"
+                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                 </div>
 
-                {/* Remember / Forgot */}
                 <div className="flex items-center justify-between text-sm">
                   <label className="flex items-center gap-2.5 cursor-pointer group">
                     <div className="relative">
@@ -257,9 +254,9 @@ export default function LoginPage() {
                   </Link>
                 </div>
 
-                {/* Submit */}
                 <Button
                   type="submit"
+                  id="btn-login-submit"
                   className="w-full h-12 rounded-xl bg-gradient-to-r from-elpis-orange to-elpis-orange-dark hover:from-elpis-orange-dark hover:to-elpis-orange shadow-lg shadow-elpis-orange/25 font-semibold text-base transition-all duration-300"
                   disabled={isLoading}
                 >
@@ -272,14 +269,12 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              {/* Divider */}
               <div className="flex items-center gap-4 my-6">
                 <div className="flex-1 h-px bg-elpis-gray-light" />
                 <span className="text-xs text-elpis-gray-medium">ou</span>
                 <div className="flex-1 h-px bg-elpis-gray-light" />
               </div>
 
-              {/* Register link */}
               <div className="text-center">
                 <p className="text-elpis-gray-medium text-sm">
                   Não tem uma conta?{' '}

@@ -2,14 +2,87 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 import { prisma } from '@/lib/prisma'
+import { encryptField, decryptField } from '@/lib/crypto'
+import { z } from 'zod'
 
-// GET - Get all patients for authenticated professional
+const patientSchema = z.object({
+  firstName: z.string().min(1).max(100).trim(),
+  lastName: z.string().min(1).max(100).trim(),
+  email: z.string().email().max(255).optional().or(z.literal('')),
+  phone: z.string().max(30).optional(),
+  whatsapp: z.string().max(30).optional(),
+  dateOfBirth: z.string().optional(),
+  gender: z.string().max(20).optional(),
+  age: z.number().int().min(0).max(150).optional().nullable(),
+  address: z.string().max(255).optional(),
+  addressNumber: z.string().max(20).optional(),
+  addressComplement: z.string().max(100).optional(),
+  neighborhood: z.string().max(100).optional(),
+  city: z.string().max(100).optional(),
+  state: z.string().max(50).optional(),
+  zipCode: z.string().max(10).optional(),
+  chiefComplaint: z.string().max(2000).optional(),
+  medicalHistory: z.string().max(10000).optional(),
+  notes: z.string().max(10000).optional(),
+  profileImageUrl: z.string().url().optional().or(z.literal('')),
+  defaultConsultationType: z.string().max(50).optional(),
+  defaultConsultationValue: z.union([z.string(), z.number()]).optional(),
+})
+
+function encryptPatientData(body: any) {
+  return {
+    phone: encryptField(body.phone),
+    whatsapp: encryptField(body.whatsapp),
+    address: encryptField(body.address),
+    addressNumber: encryptField(body.addressNumber),
+    addressComplement: encryptField(body.addressComplement),
+    neighborhood: encryptField(body.neighborhood),
+    zipCode: encryptField(body.zipCode),
+    chiefComplaint: encryptField(body.chiefComplaint),
+    medicalHistory: encryptField(body.medicalHistory),
+    notes: encryptField(body.notes),
+  }
+}
+
+function decryptPatient(p: any) {
+  return {
+    ...p,
+    phone: decryptField(p.phone),
+    whatsapp: decryptField(p.whatsapp),
+    address: decryptField(p.address),
+    addressNumber: decryptField(p.addressNumber),
+    addressComplement: decryptField(p.addressComplement),
+    neighborhood: decryptField(p.neighborhood),
+    zipCode: decryptField(p.zipCode),
+    chiefComplaint: decryptField(p.chiefComplaint),
+    medicalHistory: decryptField(p.medicalHistory),
+    notes: decryptField(p.notes),
+  }
+}
+
+function calculateAge(dateOfBirth: Date): number {
+  const today = new Date()
+  const birthDate = new Date(dateOfBirth)
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const monthDiff = today.getMonth() - birthDate.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--
+  }
+  return age
+}
+
+async function getProfessionalForSession(userId: string) {
+  return prisma.professionalProfile.findUnique({
+    where: { userId },
+  })
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
     const professional = await prisma.professionalProfile.findUnique({
@@ -22,31 +95,28 @@ export async function GET(request: NextRequest) {
     })
 
     if (!professional) {
-      return NextResponse.json({ error: 'Professional profile not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Perfil profissional não encontrado' }, { status: 404 })
     }
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
 
-    let patients = professional.patients
+    let patients = professional.patients.map(decryptPatient)
 
-    // Filter by search term if provided
     if (search) {
       const searchLower = search.toLowerCase()
-      patients = patients.filter((p) =>
-        p.firstName.toLowerCase().includes(searchLower) ||
-        p.lastName.toLowerCase().includes(searchLower) ||
-        p.email?.toLowerCase().includes(searchLower) ||
-        p.phone?.includes(searchLower)
+      patients = patients.filter(
+        (p) =>
+          p.firstName.toLowerCase().includes(searchLower) ||
+          p.lastName.toLowerCase().includes(searchLower) ||
+          p.email?.toLowerCase().includes(searchLower) ||
+          p.phone?.includes(searchLower)
       )
     }
 
-    // Calculate age from dateOfBirth if not set
     const patientsWithAge = patients.map((p) => ({
       ...p,
       age: p.age || (p.dateOfBirth ? calculateAge(p.dateOfBirth) : null),
-      defaultConsultationType: p.defaultConsultationType,
-      defaultConsultationValue: p.defaultConsultationValue,
     }))
 
     return NextResponse.json({
@@ -57,204 +127,152 @@ export async function GET(request: NextRequest) {
         newPatientsThisMonth: 0,
       },
     })
-  } catch (error) {
-    console.error('Patients GET error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch patients' },
-      { status: 500 }
-    )
+  } catch {
+    return NextResponse.json({ error: 'Falha ao buscar pacientes' }, { status: 500 })
   }
 }
 
-// POST - Create new patient
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const professional = await prisma.professionalProfile.findUnique({
-      where: { userId: session.user.id },
-    })
+    const professional = await getProfessionalForSession(session.user.id)
 
     if (!professional) {
-      return NextResponse.json({ error: 'Professional profile not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Perfil profissional não encontrado' }, { status: 404 })
     }
 
     const body = await request.json()
+    const validatedData = patientSchema.parse(body)
+    const encrypted = encryptPatientData(validatedData)
 
     const patient = await prisma.patient.create({
       data: {
         professionalProfileId: professional.id,
-        firstName: body.firstName,
-        lastName: body.lastName,
-        email: body.email,
-        phone: body.phone,
-        whatsapp: body.whatsapp,
-        dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
-        gender: body.gender,
-        age: body.age,
-        address: body.address,
-        addressNumber: body.addressNumber,
-        addressComplement: body.addressComplement,
-        neighborhood: body.neighborhood,
-        city: body.city,
-        state: body.state,
-        zipCode: body.zipCode,
-        chiefComplaint: body.chiefComplaint,
-        medicalHistory: body.medicalHistory,
-        notes: body.notes,
-        profileImageUrl: body.profileImageUrl,
-        defaultConsultationType: body.defaultConsultationType,
-        defaultConsultationValue: body.defaultConsultationValue ? parseFloat(body.defaultConsultationValue) : null,
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email || null,
+        gender: validatedData.gender || null,
+        age: validatedData.age ?? null,
+        city: validatedData.city || null,
+        state: validatedData.state || null,
+        dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
+        profileImageUrl: validatedData.profileImageUrl || null,
+        defaultConsultationType: validatedData.defaultConsultationType || null,
+        defaultConsultationValue: validatedData.defaultConsultationValue
+          ? parseFloat(String(validatedData.defaultConsultationValue))
+          : null,
+        ...encrypted,
       },
     })
 
-    return NextResponse.json({
-      id: patient.id,
-      firstName: patient.firstName,
-      lastName: patient.lastName,
-      email: patient.email,
-      phone: patient.phone,
-      whatsapp: patient.whatsapp,
-      dateOfBirth: patient.dateOfBirth,
-      gender: patient.gender,
-      age: patient.age,
-      city: patient.city,
-      state: patient.state,
-      profileImageUrl: patient.profileImageUrl,
-      defaultConsultationType: patient.defaultConsultationType,
-      defaultConsultationValue: patient.defaultConsultationValue,
-    })
+    return NextResponse.json(decryptPatient(patient))
   } catch (error) {
-    console.error('Patient POST error:', error)
-    return NextResponse.json(
-      { error: 'Failed to create patient' },
-      { status: 500 }
-    )
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Dados inválidos', errors: error.errors },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Falha ao criar paciente' }, { status: 500 })
   }
 }
 
-// PUT - Update patient
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const professional = await prisma.professionalProfile.findUnique({
-      where: { userId: session.user.id },
-    })
+    const professional = await getProfessionalForSession(session.user.id)
 
     if (!professional) {
-      return NextResponse.json({ error: 'Professional profile not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Perfil profissional não encontrado' }, { status: 404 })
     }
 
     const body = await request.json()
     const patientId = body.id
 
     if (!patientId) {
-      return NextResponse.json({ error: 'Patient ID required' }, { status: 400 })
+      return NextResponse.json({ error: 'ID do paciente obrigatório' }, { status: 400 })
     }
 
-    // Verify ownership
     const existingPatient = await prisma.patient.findUnique({
       where: { id: patientId },
     })
 
     if (!existingPatient || existingPatient.professionalProfileId !== professional.id) {
-      return NextResponse.json({ error: 'Patient not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Paciente não encontrado' }, { status: 404 })
     }
 
-    const updatedData: any = {
-      firstName: body.firstName,
-      lastName: body.lastName,
-      email: body.email || null,
-      phone: body.phone || null,
-      whatsapp: body.whatsapp || null,
-      dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
-      gender: body.gender || null,
-      age: body.age ? parseInt(body.age) : null,
-      address: body.address || null,
-      addressNumber: body.addressNumber || null,
-      addressComplement: body.addressComplement || null,
-      neighborhood: body.neighborhood || null,
-      city: body.city || null,
-      state: body.state || null,
-      zipCode: body.zipCode || null,
-      chiefComplaint: body.chiefComplaint || null,
-      medicalHistory: body.medicalHistory || null,
-      notes: body.notes || null,
-      profileImageUrl: body.profileImageUrl || null,
-      defaultConsultationType: body.defaultConsultationType || null,
-      defaultConsultationValue: body.defaultConsultationValue
-        ? parseFloat(body.defaultConsultationValue)
-        : null,
-    }
+    const validatedData = patientSchema.parse(body)
+    const encrypted = encryptPatientData(validatedData)
 
     const patient = await prisma.patient.update({
       where: { id: patientId },
-      data: updatedData,
+      data: {
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email || null,
+        gender: validatedData.gender || null,
+        age: validatedData.age ? parseInt(String(validatedData.age)) : null,
+        city: validatedData.city || null,
+        state: validatedData.state || null,
+        dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
+        profileImageUrl: validatedData.profileImageUrl || null,
+        defaultConsultationType: validatedData.defaultConsultationType || null,
+        defaultConsultationValue: validatedData.defaultConsultationValue
+          ? parseFloat(String(validatedData.defaultConsultationValue))
+          : null,
+        ...encrypted,
+      },
     })
 
-    return NextResponse.json({
-      id: patient.id,
-      firstName: patient.firstName,
-      lastName: patient.lastName,
-      email: patient.email,
-      phone: patient.phone,
-      whatsapp: patient.whatsapp,
-      dateOfBirth: patient.dateOfBirth,
-      gender: patient.gender,
-      age: patient.age,
-      city: patient.city,
-      state: patient.state,
-      profileImageUrl: patient.profileImageUrl,
-    })
+    return NextResponse.json(decryptPatient(patient))
   } catch (error) {
-    console.error('Patient PUT error:', error)
-    return NextResponse.json(
-      { error: 'Failed to update patient' },
-      { status: 500 }
-    )
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Dados inválidos', errors: error.errors },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Falha ao atualizar paciente' }, { status: 500 })
   }
 }
 
-// DELETE - Delete patient
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const professional = await prisma.professionalProfile.findUnique({
-      where: { userId: session.user.id },
-    })
+    const professional = await getProfessionalForSession(session.user.id)
 
     if (!professional) {
-      return NextResponse.json({ error: 'Professional profile not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Perfil profissional não encontrado' }, { status: 404 })
     }
 
     const { searchParams } = new URL(request.url)
     const patientId = searchParams.get('id')
 
     if (!patientId) {
-      return NextResponse.json({ error: 'Patient ID required' }, { status: 400 })
+      return NextResponse.json({ error: 'ID do paciente obrigatório' }, { status: 400 })
     }
 
-    // Verify ownership
     const existingPatient = await prisma.patient.findUnique({
       where: { id: patientId },
     })
 
     if (!existingPatient || existingPatient.professionalProfileId !== professional.id) {
-      return NextResponse.json({ error: 'Patient not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Paciente não encontrado' }, { status: 404 })
     }
 
     await prisma.patient.delete({
@@ -262,25 +280,7 @@ export async function DELETE(request: NextRequest) {
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Patient DELETE error:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete patient' },
-      { status: 500 }
-    )
+  } catch {
+    return NextResponse.json({ error: 'Falha ao deletar paciente' }, { status: 500 })
   }
-}
-
-// Helper function to calculate age from date of birth
-function calculateAge(dateOfBirth: Date): number {
-  const today = new Date()
-  const birthDate = new Date(dateOfBirth)
-  let age = today.getFullYear() - birthDate.getFullYear()
-  const monthDiff = today.getMonth() - birthDate.getMonth()
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--
-  }
-  
-  return age
 }

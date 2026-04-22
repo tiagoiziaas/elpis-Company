@@ -2,40 +2,47 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { checkRegisterRateLimit } from '@/lib/rateLimiter'
+import { randomBytes } from 'crypto'
 
 const registerSchema = z.object({
-  name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
-  specialty: z.string().min(3, 'Especialidade é obrigatória'),
-  title: z.string().min(3, 'Título é obrigatório'),
-  city: z.string().min(2, 'Cidade é obrigatória'),
-  state: z.string().min(2, 'Estado é obrigatório'),
-  councilType: z.string().optional(),
-  councilNumber: z.string().optional(),
+  name: z.string().min(3).max(100).trim(),
+  email: z.string().email().max(255).toLowerCase().trim(),
+  password: z
+    .string()
+    .min(8, 'Senha deve ter pelo menos 8 caracteres')
+    .max(128)
+    .regex(/[A-Z]/, 'Deve conter ao menos uma letra maiúscula')
+    .regex(/[0-9]/, 'Deve conter ao menos um número'),
+  specialty: z.string().min(3).max(100).trim(),
+  title: z.string().min(3).max(100).trim(),
+  city: z.string().min(2).max(100).trim(),
+  state: z.string().min(2).max(50).trim(),
+  councilType: z.string().max(20).trim().optional(),
+  councilNumber: z.string().max(30).trim().optional(),
 })
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = checkRegisterRateLimit(request)
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const body = await request.json()
     const validatedData = registerSchema.parse(body)
 
-    // Check if email already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: validatedData.email },
     })
 
     if (existingUser) {
       return NextResponse.json(
-        { message: 'Email já cadastrado' },
+        { message: 'Não foi possível criar a conta com esses dados.' },
         { status: 400 }
       )
     }
 
-    // Hash password
-    const passwordHash = await bcrypt.hash(validatedData.password, 10)
+    const passwordHash = await bcrypt.hash(validatedData.password, 14)
 
-    // Generate slug from name
     const baseSlug = validatedData.name
       .toLowerCase()
       .normalize('NFD')
@@ -45,9 +52,9 @@ export async function POST(request: NextRequest) {
       .replace(/-+/g, '-')
       .trim()
 
-    const slug = `${baseSlug}-${Date.now()}`
+    const uniqueSuffix = randomBytes(3).toString('hex')
+    const slug = `${baseSlug}-${uniqueSuffix}`
 
-    // Create user and professional profile in a transaction
     const user = await prisma.user.create({
       data: {
         name: validatedData.name,
@@ -84,14 +91,13 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: 'Dados inválidos', errors: error.errors },
+        { message: 'Dados inválidos', errors: error.errors.map((e) => ({ field: e.path.join('.'), message: e.message })) },
         { status: 400 }
       )
     }
 
-    console.error('Registration error:', error)
     return NextResponse.json(
-      { message: 'Erro ao criar conta. Tente novamente.' },
+      { message: 'Não foi possível criar a conta.' },
       { status: 500 }
     )
   }

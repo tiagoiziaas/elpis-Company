@@ -61,11 +61,13 @@ export function DashboardHeader() {
               <motion.div
                 whileHover={{ scale: 1.08, rotate: 3 }}
                 whileTap={{ scale: 0.95 }}
-              <img
-                src="/logo.png"
-                alt="Elpis logo"
-                className="w-10 h-10 object-contain drop-shadow-md"
-              />
+              >
+                <img
+                  src="/logo.png"
+                  alt="Elpis logo"
+                  className="w-10 h-10 object-contain drop-shadow-md"
+                />
+              </motion.div>
               <span className="font-display font-bold text-2xl text-foreground hidden md:block tracking-tight">
                 Elpis
               </span>
