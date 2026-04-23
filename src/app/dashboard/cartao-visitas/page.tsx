@@ -150,8 +150,8 @@ export default function BusinessCardPage() {
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
           {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="font-display font-bold text-3xl text-foreground mb-1">Cartão de Visitas Digital</h1>
+          <div className="mb-6 md:mb-8">
+            <h1 className="font-display font-bold text-2xl md:text-3xl text-foreground mb-1">Cartão de Visitas Digital</h1>
             <p className="text-muted-foreground text-sm">
               Personalize seu cartão de visitas digital com suas informações de contato e redes sociais
             </p>
@@ -288,14 +288,24 @@ export default function BusinessCardPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-between items-center gap-4 pb-4">
-                <Button onClick={handleViewCard} disabled={!profile?.slug} variant="outline" className="rounded-xl border-border/60">
-                  <Eye className="h-4 w-4 mr-2" />Visualizar Cartão
+              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pb-4">
+                <Button
+                  onClick={handleViewCard}
+                  disabled={!profile?.slug}
+                  variant="outline"
+                  className="rounded-xl border-border/60 h-11 sm:h-10"
+                >
+                  <Eye className="h-4 w-4 mr-2 flex-shrink-0" />
+                  Visualizar Cartão
                 </Button>
-                <Button onClick={handleSave} disabled={isSaving} className="rounded-xl bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25">
+                <Button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="rounded-xl bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25 h-11 sm:h-10"
+                >
                   {isSaving
-                    ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Salvando...</>
-                    : <><Save className="h-4 w-4 mr-2" />Salvar Cartão de Visitas</>}
+                    ? <><Loader2 className="h-4 w-4 mr-2 animate-spin flex-shrink-0" />Salvando...</>
+                    : <><Save className="h-4 w-4 mr-2 flex-shrink-0" />Salvar Cartão de Visitas</>}
                 </Button>
               </div>
             </div>

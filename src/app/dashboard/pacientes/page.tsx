@@ -101,16 +101,16 @@ export default function PatientsPage() {
       <DashboardLayout>
 
         {/* Header */}
-        <motion.div {...stagger(0)} className="flex items-start justify-between mb-8 flex-wrap gap-4">
+        <motion.div {...stagger(0)} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="font-display font-bold text-3xl text-foreground mb-1">Pacientes</h1>
+            <h1 className="font-display font-bold text-2xl md:text-3xl text-foreground mb-1">Pacientes</h1>
             <p className="text-muted-foreground text-sm">Gerencie seus pacientes e histórico de atendimentos</p>
           </div>
           <Button
             onClick={() => setIsNewPatientModalOpen(true)}
-            className="rounded-xl bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25"
+            className="rounded-xl bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25 h-10 text-sm"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-1.5" />
             Novo Paciente
           </Button>
         </motion.div>

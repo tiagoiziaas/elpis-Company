@@ -179,34 +179,37 @@ export default function AgendaPage() {
       <DashboardLayout>
 
         {/* Header */}
-        <motion.div {...stagger(0)} className="flex items-start justify-between mb-8 flex-wrap gap-4">
+        <motion.div {...stagger(0)} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="font-display font-bold text-3xl text-foreground mb-1">Agenda</h1>
+            <h1 className="font-display font-bold text-2xl md:text-3xl text-foreground mb-1">Agenda</h1>
             <p className="text-muted-foreground text-sm">Gerencie seus horários e agendamentos</p>
           </div>
           <Button
             onClick={() => setIsNewAppointmentOpen(true)}
-            className="rounded-xl bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all"
+            className="rounded-xl bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all h-10 text-sm"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-1.5" />
             Novo Agendamento
           </Button>
         </motion.div>
 
         {/* Quick stats */}
-        <motion.div {...stagger(1)} className="grid grid-cols-3 gap-4 mb-6">
+        <motion.div {...stagger(1)} className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { icon: CheckCircle2, label: 'Confirmados',  value: confirmed, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-            { icon: AlertCircle,  label: 'Pendentes',    value: pending,   color: 'text-amber-600 dark:text-amber-400',    bg: 'bg-amber-50 dark:bg-amber-900/20' },
-            { icon: XCircle,      label: 'Cancelados',   value: cancelled, color: 'text-red-600 dark:text-red-400',        bg: 'bg-red-50 dark:bg-red-900/20' },
+            { icon: CheckCircle2, label: 'Confirmados',  short: 'Conf.',     value: confirmed, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+            { icon: AlertCircle,  label: 'Pendentes',    short: 'Pend.',     value: pending,   color: 'text-amber-600 dark:text-amber-400',    bg: 'bg-amber-50 dark:bg-amber-900/20' },
+            { icon: XCircle,      label: 'Cancelados',   short: 'Canc.',     value: cancelled, color: 'text-red-600 dark:text-red-400',        bg: 'bg-red-50 dark:bg-red-900/20' },
           ].map((s, i) => (
-            <div key={i} className="dash-card p-4 flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center flex-shrink-0`}>
-                <s.icon className={`h-5 w-5 ${s.color}`} />
+            <div key={i} className="dash-card p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${s.bg} flex items-center justify-center flex-shrink-0`}>
+                <s.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${s.color}`} />
               </div>
-              <div>
-                <p className="font-bold text-xl text-foreground">{s.value}</p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+              <div className="min-w-0">
+                <p className="font-bold text-lg sm:text-xl text-foreground">{s.value}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                  <span className="hidden sm:inline">{s.label}</span>
+                  <span className="sm:hidden">{s.short}</span>
+                </p>
               </div>
             </div>
           ))}

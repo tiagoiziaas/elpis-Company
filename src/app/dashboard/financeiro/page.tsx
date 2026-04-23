@@ -155,15 +155,15 @@ export default function FinanceiroPage() {
       <DashboardLayout>
 
         {/* ── Page Header ── */}
-        <motion.div {...stagger(0)} className="flex items-start justify-between mb-8 flex-wrap gap-4">
+        <motion.div {...stagger(0)} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="font-display font-bold text-3xl text-foreground mb-1 flex items-center gap-3">
-              <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center shadow-lg shadow-primary/25">
-                <Wallet className="h-5 w-5 text-white" />
+            <h1 className="font-display font-bold text-2xl md:text-3xl text-foreground mb-1 flex items-center gap-3">
+              <span className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center shadow-lg shadow-primary/25 flex-shrink-0">
+                <Wallet className="h-4 w-4 md:h-5 md:w-5 text-white" />
               </span>
               Financeiro
             </h1>
-            <p className="text-muted-foreground text-sm ml-[52px]">
+            <p className="text-muted-foreground text-sm ml-[48px] md:ml-[52px]">
               Movimentações de <span className="font-semibold text-foreground capitalize">{currentMonthLabel}</span>
               {!isCurrentMonth && (
                 <button onClick={() => { setNavMonth(today.getMonth()); setNavYear(today.getFullYear()) }} className="ml-2 text-xs text-primary hover:underline font-semibold">
@@ -179,7 +179,7 @@ export default function FinanceiroPage() {
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={goToPrev}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-semibold text-foreground min-w-[130px] text-center capitalize">
+              <span className="text-sm font-semibold text-foreground min-w-[110px] sm:min-w-[130px] text-center capitalize">
                 {currentMonthLabel}
               </span>
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={goToNext} disabled={isCurrentMonth}>
@@ -188,9 +188,9 @@ export default function FinanceiroPage() {
             </div>
             <Button
               onClick={() => setAporteOpen(true)}
-              className="rounded-xl h-10 bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all"
+              className="rounded-xl h-10 bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all text-sm"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-1.5" />
               Novo Aporte
             </Button>
           </div>
@@ -232,9 +232,9 @@ export default function FinanceiroPage() {
         )}
 
         {/* ── Tabs ── */}
-        <motion.div {...stagger(2)} className="flex items-center gap-1.5 mb-5 bg-muted/40 border border-border/50 rounded-xl p-1 w-fit">
-          {([
-            { key: 'movimentos', label: 'Movimentações', icon: BarChart3 },
+        <motion.div {...stagger(2)} className="mb-5 overflow-x-auto">
+          <div className="flex items-center gap-1.5 bg-muted/40 border border-border/50 rounded-xl p-1 w-fit min-w-full sm:min-w-0">
+          {([\n            { key: 'movimentos', label: 'Movimentações', icon: BarChart3 },
             { key: 'pacientes',  label: 'Por Paciente',  icon: Users },
             { key: 'aportes',    label: 'Aportes',       icon: Wallet },
           ] as const).map(tab => (
@@ -242,16 +242,17 @@ export default function FinanceiroPage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200',
+                'flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap',
                 activeTab === tab.key
                   ? 'bg-gradient-to-r from-primary to-orange-600 text-white shadow-md shadow-primary/25'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted'
               )}
             >
-              <tab.icon className="h-4 w-4" />
+              <tab.icon className="h-4 w-4 flex-shrink-0" />
               {tab.label}
             </button>
           ))}
+          </div>
         </motion.div>
 
         {/* ── TAB: Movimentações ── */}

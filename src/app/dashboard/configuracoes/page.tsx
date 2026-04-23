@@ -117,8 +117,8 @@ export default function SettingsPage() {
       <DashboardLayout>
 
         {/* Header */}
-        <motion.div {...stagger(0)} className="mb-8">
-          <h1 className="font-display font-bold text-3xl text-foreground mb-1">Configurações</h1>
+        <motion.div {...stagger(0)} className="mb-6 md:mb-8">
+          <h1 className="font-display font-bold text-2xl md:text-3xl text-foreground mb-1">Configurações</h1>
           <p className="text-muted-foreground text-sm">Gerencie suas preferências e configurações da conta</p>
         </motion.div>
 
@@ -274,11 +274,11 @@ export default function SettingsPage() {
           </motion.div>
 
           {/* Save */}
-          <motion.div {...stagger(6)} className="flex justify-end pb-4">
+          <motion.div {...stagger(6)} className="flex justify-end sm:justify-end pb-4">
             <Button
               onClick={handleSaveSettings}
               disabled={isSaving}
-              className="rounded-xl bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25"
+              className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25 h-11 sm:h-10"
             >
               {isSaving
                 ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Salvando...</>
