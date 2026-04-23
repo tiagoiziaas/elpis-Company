@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 
 export const dynamic = 'force-dynamic'
+
+// Max size: 2MB raw → ~2.7MB base64 (we enforce 2MB limit before encoding)
+const MAX_SIZE = 2 * 1024 * 1024 // 2MB
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,40 +33,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file size (2MB max)
-    const maxSize = 2 * 1024 * 1024 // 2MB
-    if (file.size > maxSize) {
+    if (file.size > MAX_SIZE) {
       return NextResponse.json(
         { error: 'Arquivo muito grande. Máximo 2MB.' },
         { status: 400 }
       )
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'profiles')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
-    // Generate unique filename
-    const ext = file.name.split('.').pop() || 'jpg'
-    const filename = `${session.user.id}-${Date.now()}.${ext}`
-    const filepath = join(uploadsDir, filename)
-
-    // Write file
+    // Convert to base64 data URL — works on any hosting (Netlify, Vercel, etc.)
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
-
-    // Public URL
-    const imageUrl = `/uploads/profiles/${filename}`
+    const base64 = buffer.toString('base64')
+    const mimeType = file.type || 'image/jpeg'
+    const dataUrl = `data:${mimeType};base64,${base64}`
 
     // Update profile in database
     await prisma.professionalProfile.update({
       where: { userId: session.user.id },
-      data: { profileImageUrl: imageUrl },
+      data: { profileImageUrl: dataUrl },
     })
 
-    return NextResponse.json({ url: imageUrl, success: true })
+    return NextResponse.json({ url: dataUrl, success: true })
   } catch (error) {
     console.error('Upload photo error:', error)
     return NextResponse.json(
@@ -75,3 +62,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+

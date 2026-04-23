@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import localFont from "next/font/local"
 import "./globals.css"
@@ -16,6 +16,15 @@ const surgena = localFont({
   variable: "--font-surgena",
   display: "swap",
 })
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover", // iPhone notch / Dynamic Island safe area
+  themeColor: "#f97316",
+}
 
 export const metadata: Metadata = {
   title: "Elpis - Conectando Pacientes e Profissionais da Saúde",
@@ -35,7 +44,6 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
   other: {
-    "theme-color": "#f97316",
     "msapplication-TileImage": "/logo.png",
     "msapplication-TileColor": "#f97316",
   },

@@ -172,19 +172,20 @@ export function DashboardSidebarNew() {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
-      <div className="pt-20 flex">
-        {/* Fixed Sidebar */}
-        <aside className="hidden md:flex w-64 xl:w-72 flex-shrink-0 flex-col fixed left-0 top-20 bottom-0 sidebar-bg border-r border-border/60 px-4 py-6 overflow-y-auto z-40">
+      {/* pt-[68px] = fixed header height; extra pb for iPhone home indicator */}
+      <div className="pt-[68px] flex">
+        {/* Fixed Sidebar — desktop only */}
+        <aside className="hidden md:flex w-64 xl:w-72 flex-shrink-0 flex-col fixed left-0 top-[68px] bottom-0 sidebar-bg border-r border-border/60 px-4 py-6 overflow-y-auto z-40">
           <DashboardSidebarNew />
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 md:ml-64 xl:ml-72 min-w-0">
+        <main className="flex-1 md:ml-64 xl:ml-72 min-w-0 overflow-x-hidden">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="px-4 md:px-8 py-8"
+            className="px-3 sm:px-5 md:px-8 py-5 md:py-8 pb-safe"
           >
             {children}
           </motion.div>

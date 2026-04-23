@@ -205,9 +205,9 @@ export default function DashboardPage() {
       <DashboardLayout>
 
         {/* ── Page Header ── */}
-        <motion.div {...stagger(0)} className="flex items-start justify-between mb-8 flex-wrap gap-4">
+        <motion.div {...stagger(0)} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="font-display font-bold text-3xl text-foreground mb-1">
+            <h1 className="font-display font-bold text-2xl md:text-3xl text-foreground mb-1">
               {greeting()}, {session?.user?.name?.split(' ')[0] ?? 'Profissional'}! 👋
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -219,13 +219,13 @@ export default function DashboardPage() {
               )}
             </p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Month Navigator */}
             <div className="flex items-center gap-1 bg-muted/50 border border-border/60 rounded-xl px-1 py-1">
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={goToPrevMonth}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-semibold text-foreground min-w-[120px] text-center capitalize">
+              <span className="text-sm font-semibold text-foreground min-w-[100px] sm:min-w-[120px] text-center capitalize">
                 {currentMonth}
               </span>
               <Button
@@ -239,17 +239,17 @@ export default function DashboardPage() {
               </Button>
             </div>
             <Link href="/dashboard/agenda">
-              <Button variant="outline" className="rounded-xl h-10 border-border/60 hover:border-primary/40 transition-colors">
-                <Calendar className="h-4 w-4 mr-2" />
-                Ver Agenda
+              <Button variant="outline" className="rounded-xl h-10 border-border/60 hover:border-primary/40 transition-colors text-sm">
+                <Calendar className="h-4 w-4 mr-1.5" />
+                Agenda
               </Button>
             </Link>
             <Button
               onClick={() => setIsNewAppointmentOpen(true)}
-              className="rounded-xl h-10 bg-gradient-to-r from-primary to-orange-600 hover:from-orange-600 hover:to-primary text-white shadow-lg shadow-primary/25 transition-all duration-300"
+              className="rounded-xl h-10 bg-gradient-to-r from-primary to-orange-600 hover:from-orange-600 hover:to-primary text-white shadow-lg shadow-primary/25 transition-all duration-300 text-sm"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Agendamento
+              <Plus className="h-4 w-4 mr-1.5" />
+              <span className="hidden xs:inline">Novo </span>Agendamento
             </Button>
           </div>
         </motion.div>

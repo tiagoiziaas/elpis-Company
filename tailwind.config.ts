@@ -199,7 +199,36 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    // Safe-area-inset utilities for iPhone notch / home indicator
+    function ({ addUtilities }: any) {
+      addUtilities({
+        '.pb-safe': {
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        },
+        '.pt-safe': {
+          paddingTop: 'env(safe-area-inset-top)',
+        },
+        '.pl-safe': {
+          paddingLeft: 'env(safe-area-inset-left)',
+        },
+        '.pr-safe': {
+          paddingRight: 'env(safe-area-inset-right)',
+        },
+        '.px-safe': {
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)',
+        },
+        '.mb-safe': {
+          marginBottom: 'env(safe-area-inset-bottom)',
+        },
+        '.min-h-screen-safe': {
+          minHeight: ['100vh', 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))'],
+        },
+      })
+    },
+  ],
 } satisfies Config
 
 export default config

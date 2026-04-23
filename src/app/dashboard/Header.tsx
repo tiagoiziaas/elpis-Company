@@ -52,8 +52,9 @@ export function DashboardHeader() {
             ? 'bg-background/95 backdrop-blur-xl border-b border-border/60 shadow-sm'
             : 'bg-background/90 backdrop-blur-md border-b border-border/40'
         )}
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="px-4 md:px-6 lg:px-8">
+        <div className="px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex items-center justify-between h-[68px]">
 
             {/* Logo */}
@@ -242,9 +243,13 @@ export function DashboardHeader() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-              className="fixed top-0 left-0 bottom-0 z-50 w-72 bg-background border-r border-border/60 shadow-2xl md:hidden overflow-y-auto"
+              className="fixed top-0 left-0 bottom-0 z-50 w-[280px] max-w-[85vw] bg-background border-r border-border/60 shadow-2xl md:hidden overflow-y-auto"
+              style={{
+                paddingTop: 'max(80px, calc(68px + env(safe-area-inset-top)))',
+                paddingBottom: 'env(safe-area-inset-bottom)',
+              }}
             >
-              <div className="p-4 pt-20">
+              <div className="px-4 pb-6">
                 <DashboardSidebarNew />
               </div>
             </motion.div>

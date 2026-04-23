@@ -58,7 +58,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col lg:flex-row overflow-x-hidden">
       <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative flex-col overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1576765608622-067973a79f53?w=960&h=1080&fit=crop&q=85"
@@ -145,7 +145,11 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="flex-1 bg-white flex flex-col">
+      {/* ── Right: Form Panel ── */}
+      <div
+        className="flex-1 bg-white flex flex-col min-h-screen lg:min-h-0"
+        style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
         <div className="p-6 flex items-center justify-between">
           <Link href="/" className="inline-flex items-center gap-2 text-elpis-gray-medium hover:text-elpis-black transition-colors group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />

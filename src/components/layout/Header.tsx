@@ -41,9 +41,10 @@ export function Header() {
           ? 'bg-white/98 backdrop-blur-xl shadow-sm shadow-black/8 border-b border-slate-200/60'
           : 'bg-[#0f172a]/90 backdrop-blur-lg border-b border-orange-500/20'
       }`}
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-[68px] md:h-20">
 
           {/* Logo */}
           <Link href="/" className="flex items-center justify-center gap-0 group">
@@ -55,9 +56,9 @@ export function Header() {
               <img
                 src="/logo.png"
                 alt="Elpis logo"
-                className="w-14 h-14 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-200"
+                className="w-10 h-10 md:w-14 md:h-14 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-200"
               />
-              <span className={`font-display font-bold text-3xl transition-colors duration-300 ${
+              <span className={`font-display font-bold text-2xl md:text-3xl transition-colors duration-300 ${
                 isScrolled ? 'text-elpis-black' : 'text-white'
               }`}>
                 Elpis
@@ -80,7 +81,7 @@ export function Header() {
             ))}
           </nav>
 
-          {/* Auth Buttons */}
+          {/* Auth Buttons — Desktop */}
           <div className="hidden md:flex items-center gap-3">
             {status === 'loading' ? (
               <div className="w-6 h-6 rounded-full border-2 border-elpis-orange border-t-transparent animate-spin" />
@@ -159,9 +160,9 @@ export function Header() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button — bigger touch target for iOS */}
           <button
-            className={`md:hidden p-2 rounded-lg transition-colors ${
+            className={`md:hidden w-11 h-11 flex items-center justify-center rounded-xl transition-colors ${
               isScrolled ? 'text-slate-800 hover:bg-slate-100' : 'text-white hover:bg-white/15'
             }`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -181,13 +182,14 @@ export function Header() {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25 }}
             className="md:hidden bg-white border-t border-elpis-gray-light overflow-hidden"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
-            <div className="container mx-auto px-4 py-5 flex flex-col gap-1">
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="flex items-center py-3 px-4 rounded-xl text-elpis-gray-medium hover:text-elpis-orange hover:bg-elpis-offWhite transition-all font-medium"
+                  className="flex items-center py-3.5 px-4 rounded-xl text-elpis-gray-medium hover:text-elpis-orange hover:bg-elpis-offWhite transition-all font-medium text-base"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
@@ -200,7 +202,7 @@ export function Header() {
                   <>
                     <Link
                       href="/dashboard"
-                      className="flex items-center gap-2 text-elpis-black font-medium py-3 px-4 rounded-xl hover:bg-elpis-offWhite transition-all"
+                      className="flex items-center gap-2 text-elpis-black font-medium py-3.5 px-4 rounded-xl hover:bg-elpis-offWhite transition-all"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <LayoutDashboard className="h-4 w-4 text-elpis-orange" />
@@ -208,7 +210,7 @@ export function Header() {
                     </Link>
                     <button
                       onClick={() => { signOut(); setIsMobileMenuOpen(false) }}
-                      className="flex items-center gap-2 text-red-500 font-medium py-3 px-4 rounded-xl hover:bg-red-50 transition-all"
+                      className="flex items-center gap-2 text-red-500 font-medium py-3.5 px-4 rounded-xl hover:bg-red-50 transition-all"
                     >
                       <LogOut className="h-4 w-4" />
                       Sair
@@ -220,7 +222,7 @@ export function Header() {
                       href="/login"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <Button variant="outline" className="w-full rounded-xl h-11 border-elpis-gray-light">
+                      <Button variant="outline" className="w-full rounded-xl h-12 border-elpis-gray-light text-base">
                         Entrar
                       </Button>
                     </Link>
@@ -228,7 +230,7 @@ export function Header() {
                       href="/cadastro/profissional"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <Button className="w-full rounded-xl bg-elpis-orange hover:bg-elpis-orange-dark text-white h-11 font-semibold">
+                      <Button className="w-full rounded-xl bg-elpis-orange hover:bg-elpis-orange-dark text-white h-12 font-semibold text-base">
                         Começar Agora
                       </Button>
                     </Link>
